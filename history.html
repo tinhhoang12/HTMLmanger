@@ -1,0 +1,425 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Search, 
+  Calendar, 
+  User, 
+  Activity,
+  ArrowRightLeft,
+  FileText,
+  Trash2,
+  Edit,
+  Plus,
+  Clock
+} from "lucide-react";
+
+const historyData = [
+  {
+    id: "H001",
+    timestamp: "2024-01-15 14:30:25",
+    action: "Cập nhật trạng thái",
+    entity: "Công việc",
+    entityName: "Thiết kế giao diện trang chủ",
+    entityId: "T001",
+    user: "Trần Thị B",
+    userId: "EMP002",
+    oldValue: "Mới giao",
+    newValue: "Đang làm",
+    description: "Cập nhật trạng thái công việc từ 'Mới giao' thành 'Đang làm'"
+  },
+  {
+    id: "H002",
+    timestamp: "2024-01-15 10:15:42",
+    action: "Tạo mới",
+    entity: "Công việc", 
+    entityName: "Tích hợp API thanh toán",
+    entityId: "T002",
+    user: "Lê Văn C",
+    userId: "EMP003",
+    oldValue: null,
+    newValue: "Mới giao",
+    description: "Tạo công việc mới cho dự án App Mobile XYZ"
+  },
+  {
+    id: "H003",
+    timestamp: "2024-01-14 16:45:18",
+    action: "Hoàn thành",
+    entity: "Công việc",
+    entityName: "Test chức năng đăng nhập", 
+    entityId: "T003",
+    user: "Lê Văn C",
+    userId: "EMP003",
+    oldValue: "Đang làm",
+    newValue: "Đã hoàn thành",
+    description: "Hoàn thành công việc testing chức năng đăng nhập"
+  },
+  {
+    id: "H004",
+    timestamp: "2024-01-14 09:20:33",
+    action: "Chỉnh sửa",
+    entity: "Dự án",
+    entityName: "Website ABC Corp",
+    entityId: "PRJ001", 
+    user: "Nguyễn Văn A",
+    userId: "EMP001",
+    oldValue: "Ngày kết thúc: 2024-02-20",
+    newValue: "Ngày kết thúc: 2024-02-15",
+    description: "Cập nhật ngày kết thúc dự án từ 20/02 thành 15/02"
+  },
+  {
+    id: "H005",
+    timestamp: "2024-01-13 11:30:15",
+    action: "Thêm thành viên",
+    entity: "Dự án",
+    entityName: "App Mobile XYZ",
+    entityId: "PRJ002",
+    user: "Nguyễn Văn A", 
+    userId: "EMP001",
+    oldValue: "Team: [Nguyễn Văn A]",
+    newValue: "Team: [Nguyễn Văn A, Lê Văn C]",
+    description: "Thêm Lê Văn C vào team dự án"
+  },
+  {
+    id: "H006",
+    timestamp: "2024-01-12 15:45:22",
+    action: "Tạo mới",
+    entity: "Khách hàng",
+    entityName: "DEF Solutions",
+    entityId: "CUS003",
+    user: "Nguyễn Văn A",
+    userId: "EMP001", 
+    oldValue: null,
+    newValue: "Đang hợp tác",
+    description: "Thêm khách hàng mới DEF Solutions"
+  },
+  {
+    id: "H007",
+    timestamp: "2024-01-11 13:25:44",
+    action: "Hủy bỏ",
+    entity: "Công việc",
+    entityName: "Viết tài liệu API", 
+    entityId: "T004",
+    user: "Nguyễn Văn A",
+    userId: "EMP001",
+    oldValue: "Đang làm",
+    newValue: "Hủy bỏ", 
+    description: "Hủy bỏ công việc do thay đổi requirements"
+  },
+  {
+    id: "H008",
+    timestamp: "2024-01-10 08:15:30",
+    action: "Tạo mới",
+    entity: "Nhân viên",
+    entityName: "Phạm Văn D",
+    entityId: "EMP004",
+    user: "Nguyễn Văn A",
+    userId: "EMP001",
+    oldValue: null,
+    newValue: "Đang làm việc",
+    description: "Thêm nhân viên mới vào phòng IT"
+  }
+];
+
+export default function History() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [entityFilter, setEntityFilter] = useState("all");
+
+  const filteredHistory = historyData.filter(record => {
+    const matchesSearch = record.entityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         record.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         record.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesAction = actionFilter === "all" || record.action === actionFilter;
+    const matchesEntity = entityFilter === "all" || record.entity === entityFilter;
+    
+    return matchesSearch && matchesAction && matchesEntity;
+  });
+
+  const getActionColor = (action: string) => {
+    switch (action) {
+      case "Tạo mới":
+        return "bg-green-100 text-green-800";
+      case "Cập nhật trạng thái":
+        return "bg-blue-100 text-blue-800";
+      case "Chỉnh sửa":
+        return "bg-orange-100 text-orange-800";
+      case "Hoàn thành":
+        return "bg-emerald-100 text-emerald-800";
+      case "Hủy bỏ":
+        return "bg-red-100 text-red-800";
+      case "Thêm thành viên":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getActionIcon = (action: string) => {
+    switch (action) {
+      case "Tạo mới":
+        return <Plus className="h-4 w-4 text-green-600" />;
+      case "Cập nhật trạng thái":
+        return <ArrowRightLeft className="h-4 w-4 text-blue-600" />;
+      case "Chỉnh sửa":
+        return <Edit className="h-4 w-4 text-orange-600" />;
+      case "Hoàn thành":
+        return <Activity className="h-4 w-4 text-emerald-600" />;
+      case "Hủy bỏ":
+        return <Trash2 className="h-4 w-4 text-red-600" />;
+      case "Thêm thành viên":
+        return <User className="h-4 w-4 text-purple-600" />;
+      default:
+        return <FileText className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getEntityColor = (entity: string) => {
+    switch (entity) {
+      case "Công việc":
+        return "bg-blue-50 text-blue-700 border-blue-200";
+      case "Dự án":
+        return "bg-purple-50 text-purple-700 border-purple-200";
+      case "Khách hàng":
+        return "bg-green-50 text-green-700 border-green-200";
+      case "Nhân viên":
+        return "bg-orange-50 text-orange-700 border-orange-200";
+      default:
+        return "bg-gray-50 text-gray-700 border-gray-200";
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return {
+      date: date.toLocaleDateString('vi-VN'),
+      time: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    };
+  };
+
+  const stats = {
+    totalChanges: historyData.length,
+    todayChanges: historyData.filter(h => h.timestamp.startsWith('2024-01-15')).length,
+    tasksChanged: historyData.filter(h => h.entity === 'Công việc').length,
+    projectsChanged: historyData.filter(h => h.entity === 'Dự án').length
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Lịch sử thay đổi</h1>
+        <p className="text-muted-foreground">Theo dõi tất cả các thay đổi trong hệ thống</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Activity className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Tổng thay đổi</p>
+                <p className="text-2xl font-bold">{stats.totalChanges}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <Clock className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Hôm nay</p>
+                <p className="text-2xl font-bold">{stats.todayChanges}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <FileText className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Công việc</p>
+                <p className="text-2xl font-bold">{stats.tasksChanged}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <FileText className="h-5 w-5 text-orange-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Dự án</p>
+                <p className="text-2xl font-bold">{stats.projectsChanged}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filter and Search */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Tìm kiếm theo tên, người thực hiện, mô tả..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={actionFilter} onValueChange={setActionFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Lọc theo hành động" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả hành động</SelectItem>
+                <SelectItem value="Tạo mới">Tạo mới</SelectItem>
+                <SelectItem value="Cập nhật trạng thái">Cập nhật trạng thái</SelectItem>
+                <SelectItem value="Chỉnh sửa">Chỉnh sửa</SelectItem>
+                <SelectItem value="Hoàn thành">Hoàn thành</SelectItem>
+                <SelectItem value="Hủy bỏ">Hủy bỏ</SelectItem>
+                <SelectItem value="Thêm thành viên">Thêm thành viên</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={entityFilter} onValueChange={setEntityFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Lọc theo đối tượng" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả đối tượng</SelectItem>
+                <SelectItem value="Công việc">Công việc</SelectItem>
+                <SelectItem value="Dự án">Dự án</SelectItem>
+                <SelectItem value="Khách hàng">Khách hàng</SelectItem>
+                <SelectItem value="Nhân viên">Nhân viên</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* History List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Lịch sử thay đổi ({filteredHistory.length})</CardTitle>
+          <CardDescription>Danh sách tất cả các thay đổi được thực hiện trong hệ thống</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Thời gian</TableHead>
+                <TableHead>Hành động</TableHead>
+                <TableHead>Đối tượng</TableHead>
+                <TableHead>Người thực hiện</TableHead>
+                <TableHead>Thay đổi</TableHead>
+                <TableHead>Mô tả</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredHistory.map((record) => {
+                const { date, time } = formatDate(record.timestamp);
+                return (
+                  <TableRow key={record.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm">
+                          <Calendar className="h-3 w-3 mr-2 text-muted-foreground" />
+                          {date}
+                        </div>
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Clock className="h-3 w-3 mr-2" />
+                          {time}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        {getActionIcon(record.action)}
+                        <Badge className={getActionColor(record.action)}>
+                          {record.action}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <Badge variant="outline" className={getEntityColor(record.entity)}>
+                          {record.entity}
+                        </Badge>
+                        <div className="font-medium text-sm">{record.entityName}</div>
+                        <div className="text-xs text-muted-foreground">{record.entityId}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>{getInitials(record.user)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{record.user}</div>
+                          <div className="text-sm text-muted-foreground">{record.userId}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {record.oldValue && record.newValue ? (
+                        <div className="space-y-1">
+                          <div className="text-sm">
+                            <span className="text-red-600">Cũ:</span> {record.oldValue}
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-green-600">Mới:</span> {record.newValue}
+                          </div>
+                        </div>
+                      ) : record.newValue ? (
+                        <div className="text-sm">
+                          <span className="text-green-600">Tạo:</span> {record.newValue}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-muted-foreground max-w-xs">
+                        {record.description}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
