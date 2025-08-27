@@ -1,0 +1,543 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Plus, 
+  Search, 
+  Edit, 
+  Trash2, 
+  Calendar, 
+  User, 
+  Building2, 
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  PlayCircle,
+  XCircle
+} from "lucide-react";
+
+const tasks = [
+  {
+    id: "T001",
+    code: "WEB-001",
+    title: "Thiết kế giao diện trang chủ",
+    description: "Thiết kế mockup và prototype cho trang chủ website",
+    project: "Website ABC Corp",
+    projectId: "PRJ001",
+    assignee: "Trần Thị B",
+    assigneeId: "EMP002",
+    creator: "Nguyễn Văn A",
+    createdDate: "2024-01-10",
+    startDate: "2024-01-11",
+    endDate: "2024-01-15",
+    status: "Đang làm",
+    priority: "Cao",
+    category: "Design",
+    team: "Design Team"
+  },
+  {
+    id: "T002",
+    code: "API-002", 
+    title: "Tích hợp API thanh toán",
+    description: "Tích hợp và test API thanh toán VNPay",
+    project: "App Mobile XYZ",
+    projectId: "PRJ002",
+    assignee: "Nguyễn Văn A",
+    assigneeId: "EMP001", 
+    creator: "Lê Văn C",
+    createdDate: "2024-01-12",
+    startDate: "2024-01-13",
+    endDate: "2024-01-18",
+    status: "Mới giao",
+    priority: "Trung bình",
+    category: "Development",
+    team: "Dev Team"
+  },
+  {
+    id: "T003",
+    code: "TEST-003",
+    title: "Test chức năng đăng nhập",
+    description: "Kiểm tra và test tất cả flow đăng nhập",
+    project: "Hệ thống CRM",
+    projectId: "PRJ003",
+    assignee: "Lê Văn C",
+    assigneeId: "EMP003",
+    creator: "Trần Thị B", 
+    createdDate: "2024-01-08",
+    startDate: "2024-01-09",
+    endDate: "2024-01-12",
+    status: "Đã hoàn thành",
+    priority: "Thấp",
+    category: "Testing",
+    team: "QA Team"
+  },
+  {
+    id: "T004",
+    code: "DOC-004",
+    title: "Viết tài liệu API",
+    description: "Tạo documentation cho các API endpoints",
+    project: "Website ABC Corp",
+    projectId: "PRJ001",
+    assignee: "Nguyễn Văn A",
+    assigneeId: "EMP001",
+    creator: "Nguyễn Văn A",
+    createdDate: "2024-01-14",
+    startDate: "2024-01-15",
+    endDate: "2024-01-20",
+    status: "Hủy bỏ",
+    priority: "Thấp",
+    category: "Documentation",
+    team: "Dev Team"
+  }
+];
+
+export default function Tasks() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         task.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         task.assignee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         task.project.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Đã hoàn thành":
+        return "bg-green-100 text-green-800";
+      case "Đang làm":
+        return "bg-blue-100 text-blue-800";
+      case "Mới giao":
+        return "bg-yellow-100 text-yellow-800";
+      case "Hủy bỏ":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "Cao":
+        return "bg-red-100 text-red-800";
+      case "Trung bình":
+        return "bg-orange-100 text-orange-800";
+      case "Thấp":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Đã hoàn thành":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "Đang làm":
+        return <PlayCircle className="h-4 w-4 text-blue-600" />;
+      case "Mới giao":
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+      case "Hủy bỏ":
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const handleStatusUpdate = (task: any) => {
+    setSelectedTask(task);
+    setIsStatusDialogOpen(true);
+  };
+
+  const stats = {
+    total: tasks.length,
+    newAssigned: tasks.filter(t => t.status === "Mới giao").length,
+    inProgress: tasks.filter(t => t.status === "Đang làm").length,
+    completed: tasks.filter(t => t.status === "Đã hoàn thành").length,
+    cancelled: tasks.filter(t => t.status === "Hủy bỏ").length
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Quản lý công việc</h1>
+          <p className="text-muted-foreground">Tạo và theo dõi tiến độ công việc</p>
+        </div>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Tạo công việc mới
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Tạo công việc mới</DialogTitle>
+              <DialogDescription>
+                Nhập thông tin chi tiết của công việc mới
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="taskCode">Mã công việc</Label>
+                <Input id="taskCode" placeholder="VD: WEB-001" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="taskTitle">Tên công việc</Label>
+                <Input id="taskTitle" placeholder="Nhập tên công việc" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="project">Dự án</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn dự án" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PRJ001">Website ABC Corp</SelectItem>
+                    <SelectItem value="PRJ002">App Mobile XYZ</SelectItem>
+                    <SelectItem value="PRJ003">Hệ thống CRM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="assignee">Người phụ trách</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn nhân viên" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EMP001">Nguyễn Văn A - Developer</SelectItem>
+                    <SelectItem value="EMP002">Trần Thị B - Designer</SelectItem>
+                    <SelectItem value="EMP003">Lê Văn C - Tester</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="category">Loại công việc</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn loại" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="development">Development</SelectItem>
+                    <SelectItem value="design">Design</SelectItem>
+                    <SelectItem value="testing">Testing</SelectItem>
+                    <SelectItem value="documentation">Documentation</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="priority">Độ ưu tiên</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn độ ưu tiên" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="high">Cao</SelectItem>
+                    <SelectItem value="medium">Trung bình</SelectItem>
+                    <SelectItem value="low">Thấp</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Ngày bắt đầu</Label>
+                <Input id="startDate" type="date" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endDate">Ngày kết thúc</Label>
+                <Input id="endDate" type="date" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="description">Yêu cầu chi tiết</Label>
+                <Textarea id="description" placeholder="Mô tả chi tiết công việc cần làm" />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Hủy
+              </Button>
+              <Button onClick={() => setIsDialogOpen(false)}>
+                Tạo công việc
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                <AlertCircle className="h-5 w-5 text-gray-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Tổng số</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <Clock className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Mới giao</p>
+                <p className="text-2xl font-bold">{stats.newAssigned}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <PlayCircle className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Đang làm</p>
+                <p className="text-2xl font-bold">{stats.inProgress}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Hoàn thành</p>
+                <p className="text-2xl font-bold">{stats.completed}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <XCircle className="h-5 w-5 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Hủy bỏ</p>
+                <p className="text-2xl font-bold">{stats.cancelled}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filter and Search */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Tìm kiếm theo tên, mã công việc, người phụ trách..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Lọc theo trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                <SelectItem value="Mới giao">Mới giao</SelectItem>
+                <SelectItem value="Đang làm">Đang làm</SelectItem>
+                <SelectItem value="Đã hoàn thành">Đã hoàn thành</SelectItem>
+                <SelectItem value="Hủy bỏ">Hủy bỏ</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Task List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách công việc ({filteredTasks.length})</CardTitle>
+          <CardDescription>Quản lý và cập nhật trạng thái công việc</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Công việc</TableHead>
+                <TableHead>Dự án</TableHead>
+                <TableHead>Người phụ trách</TableHead>
+                <TableHead>Thời gian</TableHead>
+                <TableHead>Ưu tiên</TableHead>
+                <TableHead>Trạng thái</TableHead>
+                <TableHead>Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTasks.map((task) => (
+                <TableRow key={task.id}>
+                  <TableCell>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium">{task.title}</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">{task.code}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{task.description}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Người tạo: {task.creator} - {task.createdDate}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <div>
+                        <div className="font-medium">{task.project}</div>
+                        <div className="text-sm text-muted-foreground">{task.team}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>{getInitials(task.assignee)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{task.assignee}</div>
+                        <div className="text-sm text-muted-foreground">{task.category}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="flex items-center text-sm">
+                        <Calendar className="h-3 w-3 mr-2 text-muted-foreground" />
+                        {task.startDate}
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Calendar className="h-3 w-3 mr-2 text-muted-foreground" />
+                        {task.endDate}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={getPriorityColor(task.priority)}>
+                      {task.priority}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      {getStatusIcon(task.status)}
+                      <Badge className={getStatusColor(task.status)}>
+                        {task.status}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleStatusUpdate(task)}
+                      >
+                        Cập nhật
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Status Update Dialog */}
+      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cập nhật trạng thái công việc</DialogTitle>
+            <DialogDescription>
+              Cập nhật trạng thái cho: {selectedTask?.title}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <Label htmlFor="newStatus">Trạng thái mới</Label>
+            <Select defaultValue={selectedTask?.status}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Chọn trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Mới giao">Mới giao</SelectItem>
+                <SelectItem value="Đang làm">Đang làm</SelectItem>
+                <SelectItem value="Đã hoàn thành">Đã hoàn thành</SelectItem>
+                <SelectItem value="Hủy bỏ">Hủy bỏ</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>
+              Hủy
+            </Button>
+            <Button onClick={() => setIsStatusDialogOpen(false)}>
+              Cập nhật
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
